@@ -23,14 +23,14 @@ const TableRow = React.createClass({
         <td data-toggle="collapse" data-target={rowID}>{this.props.row.state}</td>
         <td data-toggle="collapse" data-target={rowID}>{this.props.row.cluster_name}</td>
         <td data-toggle="collapse" data-target={rowID}>{this.props.row.keyspace_name}</td>
-        <td data-toggle="collapse" data-target={rowID}>{this.props.row.column_families}</td>
+        <td data-toggle="collapse" data-target={rowID}>{this.props.row.column_families.join(", ")}</td>
         <td data-toggle="collapse" data-target={rowID}>
           <div className="progress">
             <div className="progress-bar" role="progressbar"
               aria-valuenow={segsRepaired} aria-valuemin="0"
               aria-valuemax={segsTotal}
               style={{width: segsPerc+'%'}}>
-              {segsRepaired}/{segsTotal}
+              [{segsPerc.toFixed(1)}%]
             </div>
           </div>
         </td>
@@ -49,6 +49,10 @@ const TableRowDetails = React.createClass({
 
     const rowID = `details_${this.props.row.id}`;
     const createdAt = moment(this.props.row.creation_time).format("LLL");
+    const segsRepaired = this.props.row.segments_repaired;
+    const segsTotal = this.props.row.total_segments;
+    const segsPerc = (100/segsTotal)*segsRepaired;
+
     let startTime = null;
     if(this.props.row.start_time) {
       startTime = moment(this.props.row.start_time).format("LLL");
@@ -56,6 +60,12 @@ const TableRowDetails = React.createClass({
     let endTime = null;
     if(this.props.row.end_time) {
       endTime = moment(this.props.row.end_time).format("LLL");
+    } else {
+	let now = moment();
+	let elapsed = now.diff(startTime);
+	let estTotal = elapsed / segsRepaired * segsTotal;
+	let estComplete = moment(this.props.row.start_time).add(estTotal);
+	endTime = estComplete.format("LLL") + " (est)";
     }
     let pauseTime = null;
     if(this.props.row.pause_time) {
@@ -99,9 +109,13 @@ const TableRowDetails = React.createClass({
                     <td>Segment repaired</td>
                     <td>{this.props.row.segments_repaired}</td>
                 </tr>
+		<tr>
+		    <td>Percent complete</td>
+	            <td>{segsPerc.toFixed(1)}</td>
+		</tr>
                 <tr>
                     <td>Intensity</td>
-                    <td>{this.props.row.intensity}</td>
+                    <td>{this.props.row.intensity.toFixed(2)}</td>
                 </tr>
                 <tr>
                     <td>Repair parallism</td>
