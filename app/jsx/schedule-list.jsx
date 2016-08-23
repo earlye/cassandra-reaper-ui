@@ -59,7 +59,7 @@ const TableRowDetails = React.createClass({
                 </tr>
                 <tr>
                     <td>Intensity</td>
-                    <td>{this.props.row.intensity}</td>
+                    <td>{this.props.row.intensity.toFixed(2)}</td>
                 </tr>
                 <tr>
                     <td>Repair parallism</td>
